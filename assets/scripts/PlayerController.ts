@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Vec2, CCFloat, Node, CCInteger, SystemEvent, System, systemEvent, EventKeyboard, macro, RigidBody2D } from 'cc';
+import { _decorator, Component, Vec2, CCFloat, Node, CCInteger, SystemEvent, System, systemEvent, EventKeyboard, macro, RigidBody2D, BoxCollider2D, Collider2D, Event, ICollisionEvent, Contact2DType, IPhysics2DContact, PhysicsSystem2D, UITransform, ERaycast2DType, Camera, Rect, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
@@ -17,28 +17,53 @@ export class PlayerController extends Component {
     @property({type: RigidBody2D})
     public rb:RigidBody2D|null = null;
 
-    private _jumpCount:number = 0;
+    @property({type: Camera})
+    public cam:Camera|null = null;
 
-    /* Registers or deregisters key listener */
-    /* @param activate - activate the listener or nah
-     */
+    private _jump:boolean = false;
+    private _onGround:boolean = false;
+    private _canDoubleJump: boolean = false;
+
     setInputActive(activate:boolean) {
+        let colliders = this.getComponents(BoxCollider2D);
+
         if (activate) {
             systemEvent.on(SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+            systemEvent.on(SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
+            colliders.forEach(collider=> {
+                collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+                collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
+            });
         } else {
             systemEvent.off(SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+            systemEvent.off(SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
+            colliders.forEach(collider=> {
+                collider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+                collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
+            });
         } 
     }
 
-    //
+    isGrounded():boolean {
+        return false;
+    }
+
+    // EVENTS
+
     onKeyDown(event:EventKeyboard) {
-        if (event.keyCode === macro.KEY.space && (this._jumpCount < this.jumpCountMax)) {
-            if (this.rb) {
-                console.log(Vec2.multiplyScalar(new Vec2(0,0), Vec2.UNIT_Y, this.jumpForce))
-                this.rb.applyLinearImpulseToCenter(Vec2.multiplyScalar(new Vec2(0,0), Vec2.UNIT_Y, this.jumpForce), true);
-                this._jumpCount++;
-            }
+        if (event.keyCode === macro.KEY.space) {
+            this._jump = true;
         }
+    }
+
+    onKeyUp(event:EventKeyboard) {
+        this._jump = false;
+    }
+
+    onBeginContact(selfCollider:Collider2D, otherCollider:Collider2D, contact:IPhysics2DContact|null) {
+    }
+
+    onEndContact(selfCollider:Collider2D, otherCollider:Collider2D, contact:IPhysics2DContact|null) {
     }
 
     start () {
@@ -48,4 +73,9 @@ export class PlayerController extends Component {
 
     }
 
+    lateUpdate() {
+        if (this._jump) {
+            this.rb?.applyForceToCenter(new Vec2(0, this.jumpForce), true);
+        }
+    }
 }
