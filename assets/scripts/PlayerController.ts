@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Vec2, CCFloat, Node, CCInteger, SystemEvent, System, systemEvent, EventKeyboard, macro, RigidBody2D, BoxCollider2D, Collider2D, Event, ICollisionEvent, Contact2DType, IPhysics2DContact, PhysicsSystem2D, UITransform, ERaycast2DType, Camera, Rect, Vec3 } from 'cc';
+import { _decorator, Component, Vec2, CCFloat,  CCInteger, SystemEvent, systemEvent, EventKeyboard, macro, RigidBody2D, BoxCollider2D, Collider2D, Event, ICollisionEvent, Contact2DType, IPhysics2DContact, PhysicsSystem2D, UITransform, Camera, Rect,} from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
@@ -45,6 +45,16 @@ export class PlayerController extends Component {
     }
 
     isGrounded():boolean {
+        let transform:UITransform|null = this.getComponent(UITransform);
+        let tempRect = transform?.getBoundingBox();
+        if (tempRect) {
+            let rect = new Rect(tempRect.x, tempRect.y, tempRect.width, tempRect.height+15);
+            if (rect) {
+                const colliderList = PhysicsSystem2D.instance.testAABB(rect);
+                console.log(rect);
+            }
+        }
+
         return false;
     }
 
@@ -70,6 +80,7 @@ export class PlayerController extends Component {
     }
 
     update() {
+        this.isGrounded();
 
     }
 

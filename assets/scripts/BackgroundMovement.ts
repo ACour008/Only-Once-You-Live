@@ -1,9 +1,12 @@
 
-import { _decorator, Component, BoxCollider2D, Vec3 } from 'cc';
+import { _decorator, Component, BoxCollider2D, Vec3, CCFloat } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BackgroundMovement')
 export class BackgroundMovement extends Component {
+
+    @property({type: CCFloat})
+    public speed:number = 250;
 
     private _startPosition:Vec3|null = null;
     private _repeatWidth:number = 0;
@@ -18,7 +21,7 @@ export class BackgroundMovement extends Component {
     }
 
     update(deltaTime: number) {
-        let x = this.node.position.x - deltaTime * 250;
+        let x = this.node.position.x - deltaTime * this.speed;
         this.node.position = new Vec3(x,this.node.position.y, this.node.position.z);
 
         if (this._startPosition && (this.node.position.x < this._startPosition.x - this._repeatWidth)) {
