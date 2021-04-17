@@ -1,6 +1,8 @@
 
-import { _decorator, Component, Vec2, Vec3, CCFloat,  CCInteger, SystemEvent, systemEvent, EventKeyboard, macro, RigidBody2D, BoxCollider2D, Collider2D, Contact2DType, IPhysics2DContact, PhysicsSystem2D, UITransform, Camera, Rect, TERRAIN_HEIGHT_BASE,} from 'cc';
+import { _decorator, Component, Vec2, CCFloat, Node, CCInteger, SystemEvent, systemEvent, EventKeyboard, macro, SpriteFrame, RigidBody2D, BoxCollider2D, Collider2D, Contact2DType, IPhysics2DContact, PhysicsSystem2D, Sprite,} from 'cc';
 const { ccclass, property } = _decorator;
+
+const colors = []
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
@@ -13,6 +15,18 @@ export class PlayerController extends Component {
 
     @property({type: RigidBody2D})
     public rb:RigidBody2D|null = null;
+
+    @property({type: [SpriteFrame]})
+    public faceSprites:SpriteFrame[] = [];
+
+    @property({type:Sprite})
+    public bodySprite:Sprite|null = null
+
+    @property({type:Node})
+    public bodyNode:Node|null = null;
+
+    @property({type:Node})
+    public faceNode:Node|null = null;
 
     private _footCollider: BoxCollider2D|null = null;
     private _bodyCollider: BoxCollider2D|null = null;
@@ -36,6 +50,10 @@ export class PlayerController extends Component {
                 this._bodyCollider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
             }
         } 
+    }
+
+    restart() {
+
     }
 
     checkForGround():boolean {
@@ -80,6 +98,10 @@ export class PlayerController extends Component {
                 this._footCollider = collider;
             }
         });
+
+        if(this.bodySprite) {
+            // Change color.
+        }
     }
 
     update() {
