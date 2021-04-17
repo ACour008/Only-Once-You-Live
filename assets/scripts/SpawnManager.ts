@@ -19,6 +19,9 @@ export class SpawnManager extends Component {
     @property({type: CCFloat})
     public SpawnInterval:number = 0;
 
+    @property({type: CCFloat})
+    public spwanRepeat:number = 0;
+
     @property({type: CCInteger})
     public DelayforFirstSpawn:number = 0;
 
@@ -52,11 +55,9 @@ export class SpawnManager extends Component {
     }
 
     spawnBlocks(xAxis: number, yAxis: number) {
-        while(true) {
-            this.schedule(() => {
-                this.spawnBlock(xAxis, yAxis); 
-            }, this.SpawnInterval);
-        }
+        this.schedule(() => {
+            this.spawnBlock(xAxis, yAxis); 
+        }, this.SpawnInterval, this.spwanRepeat);
     }
 
 }
