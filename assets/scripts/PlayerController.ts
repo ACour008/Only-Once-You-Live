@@ -1,67 +1,60 @@
 
-import { _decorator, Component, Vec2, CCFloat,  CCInteger, SystemEvent, systemEvent, EventKeyboard, macro, RigidBody2D, BoxCollider2D, Collider2D, Event, ICollisionEvent, Contact2DType, IPhysics2DContact, PhysicsSystem2D, UITransform, Camera, Rect,} from 'cc';
+import { _decorator, Component, Vec2, Vec3, CCFloat,  CCInteger, SystemEvent, systemEvent, EventKeyboard, macro, RigidBody2D, BoxCollider2D, Collider2D, Contact2DType, IPhysics2DContact, PhysicsSystem2D, UITransform, Camera, Rect, TERRAIN_HEIGHT_BASE,} from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
 
-    @property({type: CCFloat})
-    public jumpForce:number = 10;
-    
-    @property({type: CCFloat})
-    public gravityModifier:number = 1;
+    @property({type:CCInteger, tooltip: "Number of extra jumps allowed (after initial jump)"})
+    public numJumps:number = 2;
 
-    @property({type: CCInteger})
-    public jumpCountMax:number = 2;
+    @property({type: CCFloat})
+    public jumpForce:number = 30;
 
     @property({type: RigidBody2D})
     public rb:RigidBody2D|null = null;
 
-    @property({type: Camera})
-    public cam:Camera|null = null;
-
+    private _footCollider: BoxCollider2D|null = null;
+    private _bodyCollider: BoxCollider2D|null = null;
     private _jump:boolean = false;
+    private _numJumps:number = 0;
     private _onGround:boolean = false;
-    private _canDoubleJump: boolean = false;
 
     setInputActive(activate:boolean) {
-        let colliders = this.getComponents(BoxCollider2D);
-
         if (activate) {
             systemEvent.on(SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
             systemEvent.on(SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
-            colliders.forEach(collider=> {
-                collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-                collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
-            });
+            if (this._footCollider && this._bodyCollider) {
+                this._footCollider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+                this._bodyCollider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+            }
         } else {
             systemEvent.off(SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
             systemEvent.off(SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
-            colliders.forEach(collider=> {
-                collider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-                collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
-            });
+            if (this._footCollider && this._bodyCollider) {
+                this._footCollider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+                this._bodyCollider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+            }
         } 
     }
 
-    isGrounded():boolean {
-        let transform:UITransform|null = this.getComponent(UITransform);
-        let tempRect = transform?.getBoundingBox();
-        if (tempRect) {
-            let rect = new Rect(tempRect.x, tempRect.y, tempRect.width, tempRect.height+15);
-            if (rect) {
-                const colliderList = PhysicsSystem2D.instance.testAABB(rect);
-                console.log(rect);
-            }
+    checkForGround():boolean {
+        let result = false;
+        if (this._footCollider) {
+            const colliderList = PhysicsSystem2D.instance.testAABB(this._footCollider.worldAABB);
+            colliderList.forEach(collider => {
+                if (collider.node.name === "Ground") {
+                    result = true;
+                }
+            });
         }
-
-        return false;
+        return result;
     }
 
     // EVENTS
 
     onKeyDown(event:EventKeyboard) {
-        if (event.keyCode === macro.KEY.space) {
+        if (event.keyCode === macro.KEY.space || event.keyCode === macro.KEY.up) {
             this._jump = true;
         }
     }
@@ -77,16 +70,41 @@ export class PlayerController extends Component {
     }
 
     start () {
+        this._numJumps = this.numJumps;
+        let colliders = this.getComponents(BoxCollider2D);
+        colliders.forEach(collider => {
+            if (collider.tag === 0) {
+                this._bodyCollider = collider;
+            }
+            if (collider.tag === 1) {
+                this._footCollider = collider;
+            }
+        });
     }
 
     update() {
-        this.isGrounded();
+        console.log(this._numJumps);
 
+        if (this._onGround) {
+            this._numJumps = this.numJumps;
+        }
+
+        if (this._jump && this._numJumps > 0) {
+            if (this.rb) {
+                this.rb.linearVelocity = new Vec2(0, this.jumpForce);
+                this._numJumps--;
+                this._jump = false;
+            }
+        }
+        else if (this._jump && this._numJumps === 0 && this._onGround) {
+            if (this.rb) {
+                this.rb.linearVelocity = new Vec2(0, this.jumpForce);
+                this._jump = false;
+            }
+        }
     }
 
     lateUpdate() {
-        if (this._jump) {
-            this.rb?.applyForceToCenter(new Vec2(0, this.jumpForce), true);
-        }
+        this._onGround = (this.checkForGround()) ? true : false;
     }
 }

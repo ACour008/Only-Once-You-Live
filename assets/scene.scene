@@ -315,7 +315,7 @@
       "__id__": 8
     },
     "_children": [],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 10
@@ -334,7 +334,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 568.232,
-      "y": 91.44,
+      "y": -246.639,
       "z": 0
     },
     "_lrot": {
@@ -467,6 +467,7 @@
     },
     "_enabled": true,
     "__prefab": null,
+    "speed": 62.5,
     "_id": "fcchA36TZLiY5N9Y9DAC52"
   },
   {
@@ -477,7 +478,7 @@
       "__id__": 8
     },
     "_children": [],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 17
@@ -496,7 +497,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 568.232,
-      "y": 91.44,
+      "y": -246.639,
       "z": 0
     },
     "_lrot": {
@@ -629,6 +630,7 @@
     },
     "_enabled": true,
     "__prefab": null,
+    "speed": 125,
     "_id": "6eubXBL21Bu4ajhlXpJpZO"
   },
   {
@@ -658,7 +660,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 568,
-      "y": 91,
+      "y": -247.079,
       "z": 0
     },
     "_lrot": {
@@ -783,16 +785,16 @@
     "_id": "5e6fY22f5HpZ5NGUpfDu+N"
   },
   {
-    "__type__": "aaf5auonYFHh5hTz/yB87CT",
+    "__type__": "1b545vdxi9EEpw/Vhk7Wm95",
     "_name": "",
     "_objFlags": 0,
     "node": {
       "__id__": 23
     },
-    "_enabled": false,
+    "_enabled": true,
     "__prefab": null,
     "speed": 250,
-    "_id": "c4340iyvBCf7ucj7s6YJhr"
+    "_id": "e4eMzmgoBLNrTrKbIZR4ar"
   },
   {
     "__type__": "cc.UITransform",
@@ -934,7 +936,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 358.32587064676613,
+    "_orthoHeight": 359.0298507462686,
     "_near": 1,
     "_far": 2000,
     "_color": {
@@ -1106,12 +1108,12 @@
     "_offset": {
       "__type__": "cc.Vec2",
       "x": 0,
-      "y": -26
+      "y": -26.4
     },
     "_size": {
       "__type__": "cc.Size",
       "width": 62.8,
-      "height": 13.2
+      "height": 12.5
     },
     "_id": "d8Uh5FOxhA+4meVPqcn4JA"
   },
@@ -1124,14 +1126,10 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "jumpForce": 750,
-    "gravityModifier": 1,
-    "jumpCountMax": 2,
+    "numJumps": 1,
+    "jumpForce": 30,
     "rb": {
       "__id__": 38
-    },
-    "cam": {
-      "__id__": 33
     },
     "_id": "6aKq5CkJxMsawgjwfjw1o6"
   },
