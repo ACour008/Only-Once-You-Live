@@ -4,5 +4,31 @@
     "designResolution": {
       "width": 1132
     }
-  }
+  },
+  "layer": [
+    {
+      "name": "Player",
+      "value": 1
+    },
+    {
+      "name": "Obstacle",
+      "value": 2
+    },
+    {
+      "name": "Ground",
+      "value": 4
+    },
+    {
+      "name": "Background1",
+      "value": 8
+    },
+    {
+      "name": "Background2",
+      "value": 16
+    },
+    {
+      "name": "Background3",
+      "value": 32
+    }
+  ]
 }

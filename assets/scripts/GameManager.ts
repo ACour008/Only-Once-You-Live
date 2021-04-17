@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, PhysicsSystem2D, Vec2 } from 'cc';
+import { _decorator, EPhysics2DDrawFlags, Component, Node, PhysicsSystem2D, Vec2, CCFloat } from 'cc';
 import { PlayerController } from "./PlayerController";
 const { ccclass, property } = _decorator;
 
@@ -12,6 +12,9 @@ enum GameState {
 
 @ccclass('GameManager')
 export class GameManager extends Component {
+
+    @property({type:CCFloat})
+    public gravity:number = -2000.0;
 
     @property({type:PlayerController})
     public playerController:PlayerController|null = null;
@@ -34,7 +37,8 @@ export class GameManager extends Component {
     }
     start () {
        PhysicsSystem2D.instance.enable = true;
-       PhysicsSystem2D.instance.gravity = new Vec2(0, -9.81);
+       PhysicsSystem2D.instance.gravity = new Vec2(0, this.gravity);
+       PhysicsSystem2D.instance.debugDrawFlags = EPhysics2DDrawFlags.All;
 
        this.currentState = GameState.GS_RUNNER_PLAY;
     }
