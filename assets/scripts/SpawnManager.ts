@@ -1,63 +1,59 @@
-import { Vec2, Component, _decorator, CCInteger, CCFloat, instantiate, Prefab } from "cc";
-import { Block } from "./Block";
+import { Vec3, Component, Node, _decorator, CCInteger, CCFloat, instantiate, Prefab, macro, UITransform } from "cc";
+import { Obstacle } from "./Obstacle";
+import { Utils } from "./Utils";
 const { ccclass, property } = _decorator;
 
 @ccclass('SpawnManager')
 export class SpawnManager extends Component {
-    @property({type: Vec2})
-    public xAxisPosition:number = 0;
 
-    @property({type: Vec2})
-    public yAxisPosition:number = 0;
+    @property({type:CCFloat})
+    public StartXPosition:number = 0;
 
-    @property({type: Vec2})
+    @property({type: CCFloat})
     public MaxYaxisPosition:number = 0;
-
-    @property({type: CCInteger})
-    public obstaclePreFab:number = 0;
 
     @property({type: CCFloat})
     public SpawnInterval:number = 0;
 
     @property({type: CCFloat})
-    public spwanRepeat:number = 0;
+    public SpawnRepeat:number = 0;
 
     @property({type: CCInteger})
     public DelayforFirstSpawn:number = 0;
 
     @property({type: Prefab})
-    public ObstaclePrefab:number = 0;
-
-    @property({type: NodeList})
-    public blocks:Block[] = [];
+    public ObstaclePrefab:Prefab|null = null;
 
     constructor() {
         super();
     }
 
-    RandomizeYposition() {
-        this.yAxisPosition = Math.random() * this.MaxYaxisPosition;
-        return this.yAxisPosition;
+    randomizeSpawnPosition():Vec3 {
+        let yAxis = Math.random() * this.MaxYaxisPosition
+        return new Vec3(0, yAxis, 0);
     }
 
-    spawnBlock(xAxis: number, yAxis: number) {
-        const block = new Block;
-        this.blocks.push(block);
-        block.setPosition(xAxis, yAxis);
-
-        //const node = instantiate(this.ObstaclePrefab);
+    randomizeSpawnLength(node:Node) {
+        let transform:UITransform|null = node.getComponent(UITransform);
+        if (transform) {
+            transform.width = Utils.randomRange(64, 64*4);
+        }
     }
 
-    spawnFirstBlock(delay: number, xAxis: number, yAxis: number) {
-        this.schedule(() => {
-            this.spawnBlock(xAxis, yAxis); 
-        }, delay);
+    spawnObstacle() {
+        let vec = this.randomizeSpawnPosition();
+        if (this.ObstaclePrefab) {
+            let obstacle:Node = instantiate(this.ObstaclePrefab);
+            obstacle.position = this.randomizeSpawnPosition();
+            this.randomizeSpawnLength(obstacle);
+            this.node.addChild(obstacle);
+        }
     }
 
-    spawnBlocks(xAxis: number, yAxis: number) {
-        this.schedule(() => {
-            this.spawnBlock(xAxis, yAxis); 
-        }, this.SpawnInterval, this.spwanRepeat);
+    start() {
+        this.schedule(()=> { 
+            this.spawnObstacle();
+        }, this.SpawnInterval, macro.REPEAT_FOREVER, this.DelayforFirstSpawn);
     }
 
 }

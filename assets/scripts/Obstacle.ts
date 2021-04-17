@@ -1,18 +1,25 @@
-
-import { _decorator, Component, CCFloat, Vec3} from 'cc';
+import { Vec2, Vec3, Component, _decorator, CCFloat } from "cc";
 const { ccclass, property } = _decorator;
 
-@ccclass('MoveLeft')
-export class MoveLeft extends Component {
-    
+enum ObstacleType{
+    OT_BLOCK,
+    OT_HARM,
+    OT_SLOW,
+    OT_FAST
+}
+
+@ccclass('Obstacle')
+export class Obstacle extends Component {
+
     @property({type:CCFloat})
     public Speed:number = 350;
 
     @property({type:CCFloat})
     public LeftBoundary:number = -10;
 
+    private _obstacleType:ObstacleType = ObstacleType.OT_BLOCK;
+
     start () {
-        // [3]
     }
 
     update (deltaTime: number) {

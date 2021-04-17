@@ -43,7 +43,7 @@ export class PlayerController extends Component {
         if (this._footCollider) {
             const colliderList = PhysicsSystem2D.instance.testAABB(this._footCollider.worldAABB);
             colliderList.forEach(collider => {
-                if (collider.node.name === "Ground") {
+                if (collider.tag === 2) {
                     result = true;
                 }
             });
@@ -83,8 +83,6 @@ export class PlayerController extends Component {
     }
 
     update() {
-        console.log(this._numJumps);
-
         if (this._onGround) {
             this._numJumps = this.numJumps;
         }
