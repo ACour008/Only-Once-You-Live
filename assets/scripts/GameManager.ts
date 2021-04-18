@@ -1,6 +1,10 @@
-import { _decorator, EPhysics2DDrawFlags, Component, Node, PhysicsSystem2D, Vec2, CCFloat, game } from 'cc';
+import { _decorator, Prefab, Vec3, Component, Node, instantiate, PhysicsSystem2D, Vec2, CCFloat, game, TERRAIN_HEIGHT_BASE, SystemEvent } from 'cc';
 import { PlayerController } from "./PlayerController";
+import { MoveLeft } from "./MoveLeft";
 import { SpawnManager } from './SpawnManager';
+import { EventHandler } from "./EventHandler";
+import { BackgroundController } from "./BackgroundController";
+
 const { ccclass, property } = _decorator;
 
 
@@ -20,11 +24,26 @@ export class GameManager extends Component {
     @property({type:PlayerController})
     public playerController:PlayerController|null = null;
 
+    @property({type:BackgroundController})
+    public backgroundController:BackgroundController|null = null;
+
+    @property({type:EventHandler})
+    public eventHandler:EventHandler|null = null;
+
     @property({type:SpawnManager})
     public groundSpawner:SpawnManager|null = null;
 
     @property({type:Node})
     public mainMenu:Node|null = null;
+
+    @property({type:Node})
+    public dialogueMenu:Node|null = null;
+
+    @property({type:Node})
+    public creditsMenu:Node|null = null;
+
+    @property({type:MoveLeft})
+    public StartingGround:MoveLeft|null = null;
     
     private _currentState = GameState.GS_MENU;
 
@@ -33,41 +52,83 @@ export class GameManager extends Component {
             case GameState.GS_MENU:
                 if (this.mainMenu) { this.mainMenu.active = true }
                 if (this.groundSpawner) { this.groundSpawner.setSpawnActive(false) }
+                if (this.backgroundController) { this.backgroundController.setBackgroundsActive(true)}
+                if (this.StartingGround) { this.StartingGround.active = false }
+                if (this.dialogueMenu) { this.dialogueMenu.active = false}
+                if (this.creditsMenu) { this.creditsMenu.active = false;}
                 this.playerController?.setInputActive(false);
                 break;
             case GameState.GS_PLAY_START:
+                if(this.mainMenu) {this.mainMenu.active = false}
+                if (this.groundSpawner) { this.groundSpawner.setSpawnActive(false) }
+                if (this.backgroundController) { this.backgroundController.setBackgroundsActive(true)}
+                if (this.StartingGround) { this.StartingGround.active = false}
+                if (this.dialogueMenu) { this.dialogueMenu.active = true }
+                if (this.creditsMenu) { this.creditsMenu.active = false;}
+                this.playerController?.setInputActive(false);
                 break;
             case GameState.GS_PLAYING:
                 setTimeout( () => {
-                    if (this.mainMenu) { this.mainMenu.active = false }
-                    if (this.groundSpawner) { 
-                        this.groundSpawner.setSpawnActive(true);
-                    }
+                    if (this.mainMenu) this.mainMenu.active = false
+                    if (this.StartingGround) { this.StartingGround.active = true }
+                    if (this.dialogueMenu) { this.dialogueMenu.active = false}
+                    this.groundSpawner?.setSpawnActive(true);
                     this.playerController?.setInputActive(true);
+                    this.backgroundController?.setBackgroundsActive(true);
+                    if (this.creditsMenu) { this.creditsMenu.active = false;}
+                    this.eventHandler?.emitEvent("gs-playing");
                 }, 0.1);
                 break;
             case GameState.GS_DEATH:
+                this.playerController?.setInputActive(false);
+                this.groundSpawner?.setSpawnActive(false);
+                this.backgroundController?.setBackgroundsActive(false);
+                if (this.creditsMenu) { this.creditsMenu.active = false;}
+                setTimeout(()=> {
+                    this.resetAll();
+                    this.currentState = GameState.GS_PLAY_START;
+
+                }, 5000)
                 break;
         }
     }
+
+    resetAll() {
+        this.playerController?.reset();
+        this.StartingGround?.reset();
+    }
+
     start () {
        PhysicsSystem2D.instance.enable = true;
        PhysicsSystem2D.instance.gravity = new Vec2(0, this.gravity);
-       PhysicsSystem2D.instance.debugDrawFlags = EPhysics2DDrawFlags.All;
+
+       if(this.eventHandler) {
+           this.eventHandler.registerEvent("player-death", this.onPlayerDeath, this);
+       }
 
        this.currentState = GameState.GS_MENU;
     }
 
     public startGame() {
-        this.currentState = //GameState.GS_PLAY_START;
-        GameState.GS_PLAYING;
+        this.currentState = GameState.GS_PLAY_START;
+    }
+
+    public startPlaying() {
+        this.currentState = GameState.GS_PLAYING;
     }
 
     public quitGame() {
         game.end();
     }
 
-    // update (deltaTime: number) {
-    //     // [4]
-    // }
+    public toggleCredits() {
+        if (this.mainMenu && this.creditsMenu) {
+            this.mainMenu.active = !this.mainMenu.active;
+            this.creditsMenu.active = !this.creditsMenu.active;
+        }
+    }
+
+    onPlayerDeath() {
+        this.currentState = GameState.GS_DEATH;
+    }
 }

@@ -10,6 +10,12 @@ export class BackgroundMovement extends Component {
 
     private _startPosition:Vec3|null = null;
     private _repeatWidth:number = 0;
+    private _isActive:boolean = true;
+
+    setActive(active:boolean) {
+        console.log("backgroundMovement");
+        this._isActive = active;
+    }
 
     start () {
         this._startPosition = new Vec3(this.node.position.x, this.node.position.y, this.node.position.z);
@@ -21,11 +27,13 @@ export class BackgroundMovement extends Component {
     }
 
     update(deltaTime: number) {
-        let x = this.node.position.x - deltaTime * this.speed;
-        this.node.position = new Vec3(x,this.node.position.y, this.node.position.z);
-
-        if (this._startPosition && (this.node.position.x < this._startPosition.x - this._repeatWidth)) {
-            this.node.position = this._startPosition;
+        if (this._isActive) {
+            let x = this.node.position.x - deltaTime * this.speed;
+            this.node.position = new Vec3(x,this.node.position.y, this.node.position.z);
+            
+            if (this._startPosition && (this.node.position.x < this._startPosition.x - this._repeatWidth)) {
+                this.node.position = this._startPosition;
+            }
         }
     }
 }

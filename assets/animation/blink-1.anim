@@ -1,0 +1,64 @@
+[
+  {
+    "__type__": "cc.AnimationClip",
+    "_name": "blink-1",
+    "_objFlags": 0,
+    "_native": "",
+    "sample": 20,
+    "speed": 1,
+    "wrapMode": 2,
+    "events": [],
+    "_duration": 20.5,
+    "_keys": [
+      [
+        0.05,
+        4,
+        4.1,
+        8,
+        8.1,
+        12,
+        12.15,
+        20,
+        20.1,
+        20.25,
+        20.35,
+        20.5
+      ]
+    ],
+    "_stepness": 0,
+    "_curves": [
+      {
+        "modifiers": [
+          {
+            "__id__": 1
+          },
+          "active"
+        ],
+        "data": {
+          "keys": 0,
+          "values": [
+            false,
+            true,
+            false,
+            true,
+            false,
+            true,
+            false,
+            true,
+            false,
+            true,
+            false,
+            false
+          ],
+          "easingMethods": {}
+        }
+      }
+    ],
+    "_commonTargets": [],
+    "_hash": 13945458
+  },
+  {
+    "__type__": "cc.animation.HierarchyPath",
+    "path": "PlayerEyesClosed"
+  }
+]
