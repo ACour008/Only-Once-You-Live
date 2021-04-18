@@ -2,7 +2,7 @@ import { Vec3, Component, Node, _decorator, CCInteger, CCFloat, instantiate, Pre
 import { Utils } from "./Utils";
 const { ccclass, property } = _decorator;
 
-const yPositions = [10, 25, 45, 65, 85];
+const yPositions = [50, 100, 150, 75, 25, 125];
 
 @ccclass('SpawnManager')
 export class SpawnManager extends Component {
@@ -17,6 +17,8 @@ export class SpawnManager extends Component {
     @property({type: [Prefab]})
     public ObstaclePrefabs:Prefab[] = [];
 
+    private _lastSpawn:number = -1;
+
     randomizeSpawnPosition():Vec3 {
         let randomIndex = Math.floor(Math.random() * yPositions.length);
         let yAxis = yPositions[randomIndex];
@@ -28,6 +30,9 @@ export class SpawnManager extends Component {
 
         if (this.ObstaclePrefabs) {
             let idx = Math.floor(Math.random() * this.ObstaclePrefabs.length);
+            if (this._lastSpawn > -1 && this._lastSpawn === idx) {
+                idx = idx % this.ObstaclePrefabs.length;
+            }
             let obstacle:Node = instantiate(this.ObstaclePrefabs[idx]);
             obstacle.position = vec;
             this.node.addChild(obstacle);

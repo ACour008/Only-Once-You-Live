@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Vec2, Node, CCFloat, Prefab, Color, CCInteger, SystemEvent, systemEvent, EventKeyboard, macro, SpriteFrame, RigidBody2D, BoxCollider2D, Collider2D, Contact2DType, IPhysics2DContact, PhysicsSystem2D, Sprite, instantiate, Canvas, Vec3, UITransform,} from 'cc';
+import { _decorator, Component, Vec2, AudioClip, AudioSource, Node, CCFloat, Prefab, Color, CCInteger, SystemEvent, systemEvent, EventKeyboard, macro, SpriteFrame, RigidBody2D, BoxCollider2D, Collider2D, Contact2DType, IPhysics2DContact, PhysicsSystem2D, Sprite, instantiate, Vec3,} from 'cc';
 import { EventHandler } from "./EventHandler";
 const { ccclass, property } = _decorator;
 
@@ -9,6 +9,21 @@ export class PlayerController extends Component {
 
     @property({type: Vec3})
     public startPosition:Vec3 = new Vec3(-450, -85, 0);
+
+    @property({type: AudioClip})
+    public jumpAudio:AudioClip|null = null;
+    
+    @property({type:AudioClip})
+    public deathAudio:AudioClip|null = null;
+
+    @property({type:AudioSource})
+    public audioSource:AudioSource|null = null
+
+    @property({type:CCFloat})
+    public pushForce:number = 5;
+
+    @property({type:CCFloat})
+    public maxXVelocity:number = 10;
 
     @property({type:CCInteger, tooltip: "Number of extra jumps allowed (after initial jump)"})
     public numJumps:number = 2;
@@ -44,6 +59,9 @@ export class PlayerController extends Component {
     private _numJumps:number = 0;
     private _onGround:boolean = false;
     private _currentBodyColor:Color = Color.WHITE;
+    private _moveleft: boolean = false;
+    private _moveRight: boolean = false;
+    private _isDead:boolean = false;
 
     setInputActive(activate:boolean) {
         if (activate) {
@@ -64,8 +82,10 @@ export class PlayerController extends Component {
     }
 
     reset() {
+        this._isDead = false;
         this._activeChildren();
         this.node.position = this.startPosition;
+    
         if (this.deathMessageNode) this.deathMessageNode.active = false;
         if (this._footCollider && this._bodyCollider) {
             this._footCollider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
@@ -93,15 +113,24 @@ export class PlayerController extends Component {
             this._jump = true;
             this._keyWentUp = false;
         }
+
+        if (event.keyCode === macro.KEY.escape) {
+            this.eventHandler?.emitEvent('pause');
+        }
     }
 
     onKeyUp(event:EventKeyboard) {
-        this._jump = false;
-        this._keyWentUp = true;
+        switch(event.keyCode) {
+            case macro.KEY.space:
+            case macro.KEY.up:
+                this._jump = false;
+                this._keyWentUp = true;
+                break;
+        }
     }
 
     onBeginContact(selfCollider:Collider2D, otherCollider:Collider2D, contact:IPhysics2DContact|null) {
-        if (otherCollider.tag === 5) {
+        if (otherCollider.tag === 5 && !this._isDead) {
             this.onDeath();
         }
     }
@@ -110,6 +139,8 @@ export class PlayerController extends Component {
     }
 
     onDeath() {
+        this._isDead = true;
+
         if (this._footCollider && this._bodyCollider) {
             this._footCollider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
             this._bodyCollider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
@@ -126,6 +157,10 @@ export class PlayerController extends Component {
 
             if (this.deathMessageNode) {
                 this.deathMessageNode.active = true;
+            }
+
+            if (this.audioSource && this.deathAudio) {
+                this.audioSource.playOneShot(this.deathAudio, 1);
             }
 
             if (this.eventHandler) {
@@ -184,6 +219,9 @@ export class PlayerController extends Component {
         if (this._jump && this._numJumps > 0) {
             if (this.rb) {
                 this.rb.linearVelocity = new Vec2(0, this.jumpForce);
+                if (this.audioSource && this.jumpAudio) {
+                    this.audioSource.playOneShot(this.jumpAudio, 1);
+                }
                 this._numJumps--;
                 this._jump = false;
             }
@@ -191,6 +229,9 @@ export class PlayerController extends Component {
         else if (this._jump && this._numJumps === 0 && this._onGround && this._keyWentUp) {
             if (this.rb) {
                 this.rb.linearVelocity = new Vec2(0, this.jumpForce);
+                if (this.audioSource && this.jumpAudio) {
+                    this.audioSource.playOneShot(this.jumpAudio, 1);
+                }
                 this._jump = false;
             }
         }
