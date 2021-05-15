@@ -2,6 +2,8 @@ ONLY ONCE YOU LIVE
 ======================
 ### A 2D infinite scrolling platformer
 
+![Game Screenshot](https://github.com/ACour008/gamehighedjam/blob/main/screenshot.png)
+
 * Version: 0.2a
 * Source: https://github.com/ACour008/GameHighedJam.git
 * Playable version: https://acour008.itch.io/only-once-you-live
