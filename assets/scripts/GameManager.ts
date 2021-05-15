@@ -1,14 +1,14 @@
-import { _decorator, Prefab, Vec3, Component, Node, instantiate, PhysicsSystem2D, Vec2, CCFloat, game, TERRAIN_HEIGHT_BASE, SystemEvent, director } from 'cc';
-import { PlayerController } from "./PlayerController";
-import { MoveLeft } from "./MoveLeft";
-import { SpawnManager } from './SpawnManager';
-import { EventHandler } from "./EventHandler";
-import { BackgroundController } from "./BackgroundController";
+import { _decorator, Component, PhysicsSystem2D, PHYSICS_2D_PTM_RATIO, Vec2, systemEvent, game, director, AudioSource, AudioClip, SliderComponent, Slider, RenderingSubMesh, SystemEventType, macro, EventKeyboard, Game, Label, EPhysics2DDrawFlags} from 'cc';
+import { PlayerMovement2D } from "./PlayerMovement2D";
+import { MenuManager } from "./MenuManager";
+import { AudioManager } from "./AudioManager";
+import { PlatformSpawner } from "./PlatformSpawner";
+import { ACEventHandler } from './ACEventHandler';
 
 const { ccclass, property } = _decorator;
 
 
-enum GameState {
+export enum GameState {
     GS_MENU,
     GS_PLAY_START,
     GS_PLAYING,
@@ -18,147 +18,168 @@ enum GameState {
 @ccclass('GameManager')
 export class GameManager extends Component {
 
-    @property({type:CCFloat})
-    public gravity:number = -2000.0;
+    @property({type:PlayerMovement2D})
+    public playerController:PlayerMovement2D|null = null;
 
-    @property({type:PlayerController})
-    public playerController:PlayerController|null = null;
+    // @property({type:BackgroundController})
+    // public backgroundController:BackgroundController|null = null;
 
-    @property({type:BackgroundController})
-    public backgroundController:BackgroundController|null = null;
+    @property({type:AudioSource})
+    public musicSource:AudioSource|null = null;
 
-    @property({type:EventHandler})
-    public eventHandler:EventHandler|null = null;
+    @property({type:PlatformSpawner})
+    public platformSpawner:PlatformSpawner|null = null;
 
-    @property({type:SpawnManager})
-    public groundSpawner:SpawnManager|null = null;
+    // @property({type:MoveLeft})
+    // public startingGround:MoveLeft|null = null;
 
-    @property({type:Node})
-    public mainMenu:Node|null = null;
+    @property({type:MenuManager})
+    public menuManager:MenuManager|null = null;
 
-    @property({type:Node})
-    public dialogueMenu:Node|null = null;
-
-    @property({type:Node})
-    public creditsMenu:Node|null = null;
-
-    @property({type:Node})
-    public pauseMenu:Node|null = null;
-
-    @property({type:MoveLeft})
-    public StartingGround:MoveLeft|null = null;
+    @property({type:AudioManager})
+    public audioManager:AudioManager|null = null;
     
     private _currentState = GameState.GS_MENU;
+    private _quitTimer:number = 0;
+    private _qIsPressed:number = 0;
+    private _cIsPressed:number = 0;
 
     set currentState(state:GameState) {
+        this._currentState = state;
         switch(state) {
             case GameState.GS_MENU:
-                if (this.eventHandler) {
-                    this.eventHandler.deregisterEvent('pause', this.onPause, this);
-                }
-                if (this.mainMenu) { this.mainMenu.active = true }
-                if (this.groundSpawner) { this.groundSpawner.setSpawnActive(false) }
-                if (this.backgroundController) { this.backgroundController.setBackgroundsActive(true)}
-                if (this.StartingGround) { this.StartingGround.active = false }
-                if (this.dialogueMenu) { this.dialogueMenu.active = false}
-                if (this.creditsMenu) { this.creditsMenu.active = false;}
-                if (this.pauseMenu) { this.pauseMenu.active = false; }
+                this._resetAll();
+                systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDownMenuState, this);
+                systemEvent.on(SystemEventType.KEY_UP, this.onKeyUpMenuState, this);
+                systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownExceptMenuState, this);
+
+                this.menuManager?.setMenusForState(GameState.GS_MENU);
                 this.playerController?.setInputActive(false);
+                this.platformSpawner?.activate(false);
                 break;
             case GameState.GS_PLAY_START:
-                if (this.eventHandler) {
-                    this.eventHandler.deregisterEvent('pause', this.onPause, this);
-                }
-                if(this.mainMenu) {this.mainMenu.active = false}
-                if (this.groundSpawner) { this.groundSpawner.setSpawnActive(false) }
-                if (this.backgroundController) { this.backgroundController.setBackgroundsActive(true)}
-                if (this.StartingGround) { this.StartingGround.active = false}
-                if (this.dialogueMenu) { this.dialogueMenu.active = true }
-                if (this.creditsMenu) { this.creditsMenu.active = false;}
-                if (this.pauseMenu) { this.pauseMenu.active = false; }
+                systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownMenuState, this);
+                systemEvent.off(SystemEventType.KEY_UP, this.onKeyUpMenuState, this);
+                systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDownExceptMenuState, this);
+
+                this.menuManager?.setMenusForState(GameState.GS_PLAY_START);
                 this.playerController?.setInputActive(false);
+                this.platformSpawner?.activate(false);
                 break;
             case GameState.GS_PLAYING:
                 setTimeout( () => {
-                    if (this.eventHandler) {
-                        this.eventHandler.registerEvent('pause', this.onPause, this);
-                    }
-                    if (this.mainMenu) this.mainMenu.active = false
-                    if (this.StartingGround) { this.StartingGround.active = true }
-                    if (this.dialogueMenu) { this.dialogueMenu.active = false}
-                    this.groundSpawner?.setSpawnActive(true);
+                    this.menuManager?.setMenusForState(GameState.GS_PLAYING)
                     this.playerController?.setInputActive(true);
-                    this.backgroundController?.setBackgroundsActive(true);
-                    if (this.creditsMenu) { this.creditsMenu.active = false;}
-                    this.eventHandler?.emitEvent("gs-playing");
+                    this.platformSpawner?.activate(true);
                 }, 0.1);
                 break;
             case GameState.GS_DEATH:
-                if (this.eventHandler) {
-                    this.eventHandler.deregisterEvent('pause', this.onPause, this);
-                }
+                this.menuManager?.setMenusForState(GameState.GS_DEATH)
                 this.playerController?.setInputActive(false);
-                this.groundSpawner?.setSpawnActive(false);
-                this.backgroundController?.setBackgroundsActive(false);
-                if (this.creditsMenu) { this.creditsMenu.active = false;}
-                if (this.pauseMenu) { this.pauseMenu.active = false; }
-                setTimeout(()=> {
-                    this.resetAll();
-                    this.currentState = GameState.GS_PLAY_START;
+                this.platformSpawner?.activate(false);
 
+                setTimeout(()=> {
+                    this._resetAll();
+                    this.currentState = GameState.GS_PLAY_START;
                 }, 5000)
                 break;
         }
     }
 
-    resetAll() {
-        this.playerController?.reset();
-        this.StartingGround?.reset();
-    }
+    // GAME EVENTS
 
     start () {
-       PhysicsSystem2D.instance.enable = true;
-       PhysicsSystem2D.instance.gravity = new Vec2(0, this.gravity);
+        PhysicsSystem2D.instance.enable = true;
+        PhysicsSystem2D.instance.gravity = new Vec2(0, -9.81 * PHYSICS_2D_PTM_RATIO);
+        
+        ACEventHandler.instance?.registerEvent("player-death", this.onPlayerDeath, this);
+        
+        this.currentState = GameState.GS_MENU;
+    }
 
-       if(this.eventHandler) {
-           this.eventHandler.registerEvent("player-death", this.onPlayerDeath, this);
-       }
+    update(deltaTime:number) {
+        if ( ((this._quitTimer + 2500) < Date.now()) && this._qIsPressed > 0 ) {
+            this.quitGame();
+        }
+    }
 
-       this.currentState = GameState.GS_MENU;
+    onKeyDownMenuState(event:EventKeyboard) {
+        switch(event.keyCode) {
+            case macro.KEY.q:
+                if (this._qIsPressed === 0) { 
+                    this._quitTimer = Date.now();
+                    ACEventHandler.instance?.emitEvent("quit-button-down");
+                }
+                this._qIsPressed += 1;
+                break;
+        }
+    }
+
+    onKeyUpMenuState(event:EventKeyboard) {
+        switch(event.keyCode) {
+            case macro.KEY.q:
+                this._qIsPressed = 0;
+                ACEventHandler.instance?.emitEvent("quit-button-up");
+                break;
+            case macro.KEY.c:
+                if (this._cIsPressed === 0) {
+                    this.menuManager?.setCreditMenu();
+                }
+                this._cIsPressed += 1;
+                break;
+        }
+    }
+
+    onKeyDownExceptMenuState(event:EventKeyboard) {
+        switch(event.keyCode) {
+            case macro.KEY.escape:
+                let fakeEvent = new Event("fake");
+                (director.isPaused) ? this.setPause(fakeEvent, "true") : this.setPause(fakeEvent, "false");
+                break;
+        }
+    }
+
+    onPlayerDeath() {
+        this.currentState = GameState.GS_DEATH;
+    }
+
+    // GAME FUNCTIONS
+
+    private _resetAll() {
+        this.playerController?.reset();
+    }
+
+    public restart() {
+        this.currentState = GameState.GS_MENU;
     }
 
     public startGame() {
-        this.currentState = GameState.GS_PLAY_START;
+        setTimeout( () => this.currentState = GameState.GS_PLAY_START, 0.1);
     }
 
     public startPlaying() {
         this.currentState = GameState.GS_PLAYING;
     }
 
-    public onPause() {
-        if (this.pauseMenu) {
-            if (director.isPaused()) {
-                this.pauseMenu.active = false;
-                director.resume();
-            } else {
-                this.pauseMenu.active = true;
-                director.pause();
-            }
-        }
-    }
-
     public quitGame() {
         game.end();
     }
 
-    public toggleCredits() {
-        if (this.mainMenu && this.creditsMenu) {
-            this.mainMenu.active = !this.mainMenu.active;
-            this.creditsMenu.active = !this.creditsMenu.active;
-        }
+    public setPause(event:Event|null, customEventData:string) {
+        let paused = customEventData === "true";
+        setTimeout( () => {
+            if (this.menuManager) { 
+                this.menuManager.setPause(paused, this._currentState);
+            }
+            this._pause(paused);
+        }, 0.1);
     }
 
-    onPlayerDeath() {
-        this.currentState = GameState.GS_DEATH;
+    private _pause(pause:boolean) {
+        (pause) ? director.pause() : director.resume();
+    }
+
+    public resetCButton() {
+        this._cIsPressed = 0;
     }
 }

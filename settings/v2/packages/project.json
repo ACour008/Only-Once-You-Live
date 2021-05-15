@@ -11,7 +11,7 @@
       "value": 1
     },
     {
-      "name": "Obstacle",
+      "name": "Platform/Obstacle",
       "value": 2
     },
     {
@@ -30,5 +30,37 @@
       "name": "Background3",
       "value": 32
     }
-  ]
+  ],
+  "physics": {
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "Player"
+      },
+      {
+        "index": 2,
+        "name": "Ground"
+      },
+      {
+        "index": 3,
+        "name": "Platform"
+      },
+      {
+        "index": 4,
+        "name": "PlatformRespawn"
+      },
+      {
+        "index": 5,
+        "name": "PlatformDestroy"
+      }
+    ],
+    "collisionMatrix": {
+      "0": 0,
+      "1": 12,
+      "2": 2,
+      "3": 26,
+      "4": 8,
+      "5": 0
+    }
+  }
 }
