@@ -3,7 +3,9 @@ import { PlayerMovement2D } from "./PlayerMovement2D";
 import { MenuManager } from "./MenuManager";
 import { AudioManager } from "./AudioManager";
 import { PlatformSpawner } from "./PlatformSpawner";
+import { Ground } from "./Ground";
 import { ACEventHandler } from './ACEventHandler';
+import { PlayerSpriteController } from './PlayerSpriteController';
 
 const { ccclass, property } = _decorator;
 
@@ -21,17 +23,14 @@ export class GameManager extends Component {
     @property({type:PlayerMovement2D})
     public playerController:PlayerMovement2D|null = null;
 
-    // @property({type:BackgroundController})
-    // public backgroundController:BackgroundController|null = null;
-
     @property({type:AudioSource})
     public musicSource:AudioSource|null = null;
 
     @property({type:PlatformSpawner})
     public platformSpawner:PlatformSpawner|null = null;
 
-    // @property({type:MoveLeft})
-    // public startingGround:MoveLeft|null = null;
+    @property({type:Ground})
+    public ground!:Ground;
 
     @property({type:MenuManager})
     public menuManager:MenuManager|null = null;
@@ -46,9 +45,9 @@ export class GameManager extends Component {
 
     set currentState(state:GameState) {
         this._currentState = state;
+        
         switch(state) {
             case GameState.GS_MENU:
-                this._resetAll();
                 systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDownMenuState, this);
                 systemEvent.on(SystemEventType.KEY_UP, this.onKeyUpMenuState, this);
                 systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownExceptMenuState, this);
@@ -56,6 +55,7 @@ export class GameManager extends Component {
                 this.menuManager?.setMenusForState(GameState.GS_MENU);
                 this.playerController?.setInputActive(false);
                 this.platformSpawner?.activate(false);
+                this.ground.reset();
                 break;
             case GameState.GS_PLAY_START:
                 systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownMenuState, this);
@@ -71,6 +71,7 @@ export class GameManager extends Component {
                     this.menuManager?.setMenusForState(GameState.GS_PLAYING)
                     this.playerController?.setInputActive(true);
                     this.platformSpawner?.activate(true);
+                    this.ground.activate();
                 }, 0.1);
                 break;
             case GameState.GS_DEATH:
@@ -92,7 +93,7 @@ export class GameManager extends Component {
         PhysicsSystem2D.instance.enable = true;
         PhysicsSystem2D.instance.gravity = new Vec2(0, -9.81 * PHYSICS_2D_PTM_RATIO);
         
-        ACEventHandler.instance?.registerEvent("player-death", this.onPlayerDeath, this);
+        // ACEventHandler.instance?.registerEvent("player-death", this.onPlayerDeath, this);
         
         this.currentState = GameState.GS_MENU;
     }
@@ -147,6 +148,8 @@ export class GameManager extends Component {
 
     private _resetAll() {
         this.playerController?.reset();
+        this.ground.reset();
+        this.platformSpawner?.reset();
     }
 
     public restart() {

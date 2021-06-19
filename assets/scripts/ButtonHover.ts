@@ -23,7 +23,6 @@ export class ButtonHover extends Component {
     }
 
     onMouseUp(event:MouseEvent) {
-        ACEventHandler.instance?.emitEvent("play-sound", "confirm");
         this.node.scale = this._originalScale;
     }
 
@@ -33,6 +32,7 @@ export class ButtonHover extends Component {
     }
 
     onMouseDown(event:MouseEvent) {
+        ACEventHandler.instance?.emitEvent("play-sound", "confirm");
         this.node.scale = Vec3.multiplyScalar(new Vec3(), this._originalScale, 0.9);
     }
 

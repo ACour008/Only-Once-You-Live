@@ -1,5 +1,5 @@
 
-import { _decorator, Component, RigidBody2D, Vec2, macro, BoxCollider2D, Contact2DType, Collider2D, IPhysics2DContact} from 'cc';
+import { _decorator, Component, RigidBody2D, Vec2, BoxCollider2D, Contact2DType, Collider2D, IPhysics2DContact, CCBoolean, Vec3} from 'cc';
 import { ACEventHandler } from './ACEventHandler';
 
 const { ccclass, property } = _decorator;
@@ -10,12 +10,8 @@ export class Platform extends Component {
     @property({type:Vec2})
     public force:Vec2 = new Vec2(-5, 0);
     
-    private _rb:RigidBody2D|null = null;
-    private _collider:BoxCollider2D|null = null;
-
-    get rigidBody() {
-        return this._rb;
-    }
+    protected _rb:RigidBody2D|null = null;
+    protected _collider:BoxCollider2D|null = null;
 
     start () {
         if (!this._rb) {
@@ -24,7 +20,6 @@ export class Platform extends Component {
 
         if (!this._collider) {
             this._collider = this.getComponent(BoxCollider2D);
-            // this._collider?.on()
         }
     }
 

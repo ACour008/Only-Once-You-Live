@@ -29,6 +29,10 @@
     {
       "name": "Background3",
       "value": 32
+    },
+    {
+      "name": "DeathGround",
+      "value": 64
     }
   ],
   "physics": {
@@ -51,16 +55,21 @@
       },
       {
         "index": 5,
-        "name": "PlatformDestroy"
+        "name": "GroundStopPoint"
+      },
+      {
+        "index": 6,
+        "name": "DeathGround"
       }
     ],
     "collisionMatrix": {
       "0": 0,
-      "1": 12,
-      "2": 2,
+      "1": 76,
+      "2": 34,
       "3": 26,
       "4": 8,
-      "5": 0
+      "5": 4,
+      "6": 2
     }
   }
 }

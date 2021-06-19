@@ -125,8 +125,6 @@ export class PlayerMovement2D extends Component {
         if (this._canJump === 1) {
             this._jumpTimer = Date.now() + this.jumpDelay;
         }
-
-        console.log(this.node.position.y);
     }
 
     lateUpdate(deltaTime:number) {

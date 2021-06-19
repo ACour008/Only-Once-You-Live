@@ -34,6 +34,11 @@ export class PlatformSpawner extends Component {
         }
     }
 
+    reset() {
+        // this._platformPool.clear();
+        this._lastPlatformYPos = 0;
+    }
+
     onLoad() {
         this._respawnCollider = this.respawnPoint.getComponent(BoxCollider2D)!;
         this.fillPlatformPool();
@@ -48,11 +53,19 @@ export class PlatformSpawner extends Component {
             this.scheduleOnce(()=> this.spawnPlatform(new Vec3(0, newYPos, 0)));
             this._lastPlatformYPos = newYPos;
         }
+
+        if (other.group === (1 << 2)) {
+            console.log("ground is touching");
+        }
     }
 
     onContactEnd(self:Collider2D, other:Collider2D) {
         if (other.group === (1 << 3)) {
             this.scheduleOnce(()=> this.destroyPlatform(other.node));
+        }
+
+        if (other.group === (1 << 2)) {
+            console.log("time for ground to stop.");
         }
     }
 
