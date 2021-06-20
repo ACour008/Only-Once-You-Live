@@ -2,7 +2,6 @@
 import { _decorator, Component, BoxCollider2D, Contact2DType, CCFloat } from 'cc';
 import { CameraShake } from './CameraShake';
 import { GameManager, GameState } from './GameManager';
-import { PlayerSpriteController } from './PlayerSpriteController';
 const { ccclass, property } = _decorator;
 
 @ccclass('DeathGround')
@@ -13,9 +12,6 @@ export class DeathGround extends Component {
 
     @property(CCFloat)
     public trauma:number = 0.5;
-
-    @property(PlayerSpriteController)
-    public playerSprites!:PlayerSpriteController;
 
     @property(GameManager)
     public gameManager!:GameManager;
@@ -30,8 +26,6 @@ export class DeathGround extends Component {
     onBeginContact(self:BoxCollider2D, other:BoxCollider2D) {
         if (other.group === (1 << 1)) {
             console.log("You died!");
-
-            this.playerSprites.makeDead();
             this.gameManager.currentState = GameState.GS_DEATH;
             this.camera.addTrauma(this.trauma);
         }

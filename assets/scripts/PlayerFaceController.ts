@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Sprite, SpriteFrame, Node } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerFaceController')
@@ -19,6 +19,14 @@ export class PlayerFaceController extends Component {
     @property({type:[SpriteFrame]})
     public mouthSprites:SpriteFrame[] = [];
 
+    @property(Node)
+    public deathMessageNode!:Node;
+
+    @property(Node)
+    public deathNode!:Node;
+
+    // TODO: Add animator component field to stop animations on death.
+
     start() {
         this.randomizeFace();
     }
@@ -34,5 +42,19 @@ export class PlayerFaceController extends Component {
         this.moustacheSprite.node.active = (Math.random() < 0.15);
         this.eyeSprite.spriteFrame = this.eyeSprites[eyeIdx];
         this.mouthSprite.spriteFrame = this.mouthSprites[mouthIdx];
+    }
+
+    public makeAlive() {
+        this.eyeSprite.node.active = true;
+        this.mouthSprite.node.active = true;
+        this.deathMessageNode.active = false;
+        this.deathNode.active = false;
+    }
+
+    public makeDead() {
+        this.eyeSprite.node.active = false;
+        this.mouthSprite.node.active = false;
+        this.deathMessageNode.active = true;
+        this.deathNode.active = true;
     }
 }

@@ -5,7 +5,6 @@ import { AudioManager } from "./AudioManager";
 import { PlatformSpawner } from "./PlatformSpawner";
 import { Ground } from "./Ground";
 import { ACEventHandler } from './ACEventHandler';
-import { PlayerSpriteController } from './PlayerSpriteController';
 
 const { ccclass, property } = _decorator;
 
@@ -21,7 +20,7 @@ export enum GameState {
 export class GameManager extends Component {
 
     @property({type:PlayerMovement2D})
-    public playerController:PlayerMovement2D|null = null;
+    public playerMovementController:PlayerMovement2D|null = null;
 
     @property({type:AudioSource})
     public musicSource:AudioSource|null = null;
@@ -53,7 +52,7 @@ export class GameManager extends Component {
                 systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownExceptMenuState, this);
 
                 this.menuManager?.setMenusForState(GameState.GS_MENU);
-                this.playerController?.setInputActive(false);
+                this.playerMovementController?.setInputActive(false);
                 this.platformSpawner?.activate(false);
                 this.ground.reset();
                 break;
@@ -63,20 +62,19 @@ export class GameManager extends Component {
                 systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDownExceptMenuState, this);
 
                 this.menuManager?.setMenusForState(GameState.GS_PLAY_START);
-                this.playerController?.setInputActive(false);
+                this.playerMovementController?.setInputActive(false);
                 this.platformSpawner?.activate(false);
                 break;
             case GameState.GS_PLAYING:
                 setTimeout( () => {
                     this.menuManager?.setMenusForState(GameState.GS_PLAYING)
-                    this.playerController?.setInputActive(true);
-                    this.platformSpawner?.activate(true);
+                    this.playerMovementController?.setInputActive(true);
                     this.ground.activate();
                 }, 0.1);
                 break;
             case GameState.GS_DEATH:
                 this.menuManager?.setMenusForState(GameState.GS_DEATH)
-                this.playerController?.setInputActive(false);
+                this.playerMovementController?.setInputActive(false);
                 this.platformSpawner?.activate(false);
 
                 setTimeout(()=> {
@@ -147,7 +145,7 @@ export class GameManager extends Component {
     // GAME FUNCTIONS
 
     private _resetAll() {
-        this.playerController?.reset();
+        this.playerMovementController?.reset();
         this.ground.reset();
         this.platformSpawner?.reset();
     }
