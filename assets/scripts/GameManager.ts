@@ -1,5 +1,6 @@
 import { _decorator, Component, PhysicsSystem2D, PHYSICS_2D_PTM_RATIO, Vec2, systemEvent, game, director, AudioSource, AudioClip, SliderComponent, Slider, RenderingSubMesh, SystemEventType, macro, EventKeyboard, Game, Label, EPhysics2DDrawFlags} from 'cc';
 import { PlayerMovement2D } from "./PlayerMovement2D";
+import { PlayerFaceController } from './PlayerFaceController';
 import { MenuManager } from "./MenuManager";
 import { AudioManager } from "./AudioManager";
 import { PlatformSpawner } from "./PlatformSpawner";
@@ -21,6 +22,9 @@ export class GameManager extends Component {
 
     @property({type:PlayerMovement2D})
     public playerMovementController:PlayerMovement2D|null = null;
+
+    @property(PlayerFaceController)
+    public playerFaceController:PlayerFaceController|null = null;
 
     @property({type:AudioSource})
     public musicSource:AudioSource|null = null;
@@ -53,6 +57,7 @@ export class GameManager extends Component {
 
                 this.menuManager?.setMenusForState(GameState.GS_MENU);
                 this.playerMovementController?.setInputActive(false);
+                this.playerFaceController?.makeAlive();
                 this.platformSpawner?.activate(false);
                 this.ground.reset();
                 break;
@@ -63,24 +68,28 @@ export class GameManager extends Component {
 
                 this.menuManager?.setMenusForState(GameState.GS_PLAY_START);
                 this.playerMovementController?.setInputActive(false);
+                this.playerFaceController?.makeAlive();
                 this.platformSpawner?.activate(false);
+                this.ground.activate(false);
                 break;
             case GameState.GS_PLAYING:
                 setTimeout( () => {
                     this.menuManager?.setMenusForState(GameState.GS_PLAYING)
                     this.playerMovementController?.setInputActive(true);
-                    this.ground.activate();
+                    this.platformSpawner?.activate(true);
+                    this.ground.activate(true);
                 }, 0.1);
                 break;
             case GameState.GS_DEATH:
                 this.menuManager?.setMenusForState(GameState.GS_DEATH)
                 this.playerMovementController?.setInputActive(false);
+                this.playerFaceController?.makeDead();
                 this.platformSpawner?.activate(false);
 
                 setTimeout(()=> {
                     this._resetAll();
                     this.currentState = GameState.GS_PLAY_START;
-                }, 5000)
+                }, 3500)
                 break;
         }
     }

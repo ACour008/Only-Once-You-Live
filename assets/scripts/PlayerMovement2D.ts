@@ -33,7 +33,7 @@ export class PlayerMovement2D extends Component {
     private _numOfJumps:number = 0;
     private _canJump:number = 0;
 
-    private _startingPos:Vec3 = new Vec3();
+    private _startingPos:Vec3 = new Vec3(-711.815, -85, 0);
 
     private _rb:RigidBody2D| null = null;
     private _bodyCollider:Collider2D|null = null;
@@ -94,7 +94,6 @@ export class PlayerMovement2D extends Component {
 
     start () {
       this._rb = this.getComponent(RigidBody2D);
-      this._startingPos = this.node.position;
       this._initColliders();
 
       this._keys.set(macro.KEY.space, false);
@@ -126,6 +125,7 @@ export class PlayerMovement2D extends Component {
             this._jumpTimer = Date.now() + this.jumpDelay;
         }
     }
+
 
     lateUpdate(deltaTime:number) {
         if ( this.isKeyPressed(macro.KEY.space) && this._canJump === 1 && this._jumpTimer > Date.now() ) {
