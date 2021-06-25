@@ -14,6 +14,7 @@ We made some major updates to our game for the final produce
 - Screen size is now wider (so you can see what is coming at you)
 - New 'obstacles' added. They may or may not kill you.
 - Additional sounds, animations, and easter eggs.
+- Oh, and the player sometimes has a moustache.
 
 ## Main Premise
 You've found yourself in a dark underworld with one chance to make it through a trickster's platform city. Can you do it? You only live once, after all.
