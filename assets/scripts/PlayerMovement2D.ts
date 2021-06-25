@@ -1,6 +1,8 @@
 
-import { _decorator, Node, Component, Vec3, RigidBody2D, PhysicsSystem2D, SystemEvent, EventKeyboard, macro, Vec2, systemEvent, CCFloat, Collider2D, BoxCollider2D, CCInteger, tween } from 'cc';
-import { ACEventHandler } from './ACEventHandler';
+import { _decorator, Node, Component, Vec3, RigidBody2D, PhysicsSystem2D, SystemEvent,
+         EventKeyboard, macro, Vec2, systemEvent, CCFloat, Collider2D, BoxCollider2D, CCInteger,
+         tween, Contact2DType, IPhysics2DContact } from 'cc';
+import { AudioManager } from './AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerMovement2D')
@@ -26,6 +28,9 @@ export class PlayerMovement2D extends Component {
 
     @property({type:Node, tooltip: "The node of the Player body sprite. Usually the child of the first Player node"})
     public characterBodyNode:Node|null = null;
+    
+    @property(AudioManager)
+    public audioManager!:AudioManager;
 
     private _keys:Map<number, boolean> = new Map();
     private _isGrounded:boolean = false;
@@ -54,8 +59,11 @@ export class PlayerMovement2D extends Component {
     private _registerListeners() {
         systemEvent.on(SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
         systemEvent.on(SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
+        if (this._footCollider) {
+            this._footCollider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this)
+        }
     }
-
+    
     private _unregisterListeners() {
         systemEvent.off(SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
         systemEvent.off(SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
@@ -87,6 +95,7 @@ export class PlayerMovement2D extends Component {
     }
 
     reset() {
+        if (this._rb) { this._rb.linearVelocity = new Vec2(0, this._rb.linearVelocity.y); }
         this.node.position = this._startingPos;
     }
 
@@ -110,6 +119,12 @@ export class PlayerMovement2D extends Component {
         this._keys.set(event.keyCode, false);
         if (this._canJump === this.maxJumps) {
             this._canJump = 0;
+        }
+    }
+
+    onBeginContact(self:BoxCollider2D, other:BoxCollider2D) {
+        if (other.group === (1 << 7)) {
+            this._canJump = 1;
         }
     }
 
@@ -145,9 +160,10 @@ export class PlayerMovement2D extends Component {
                 this._numOfJumps = 0;
             }
             if ( this._isGrounded || this._numOfJumps < this.maxJumps ) {
-                ACEventHandler.instance?.emitEvent("play-sound", "jump");
+                this.audioManager.onPlaySound(null, "jump");
                 
-                this._rb.linearVelocity = new Vec2(this._rb.linearVelocity.x, 0);
+                //this._rb.linearVelocity = new Vec2(this._rb.linearVelocity.x, 0);
+                this._rb.linearVelocity = new Vec2(0, 0);
                 this._rb.applyForceToCenter(this.jumpVelocity, true);
                 this._jumpTimer = 0;
                 this.jumpSqueeze(0.85, 1.15, 0.1);

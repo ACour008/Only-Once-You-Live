@@ -1,6 +1,5 @@
 
 import { _decorator, Component, AudioSource, AudioClip, SliderComponent } from 'cc';
-import { ACEventHandler } from './ACEventHandler';
 const { ccclass, property } = _decorator;
 
 @ccclass('AudioManager')
@@ -11,6 +10,9 @@ export class AudioManager extends Component {
 
     @property({type: AudioClip })
     public deathClip:AudioClip|null = null;
+
+    @property({type:AudioClip})
+    public deathLaughClip:AudioClip|null = null;
 
     @property({type: AudioClip })
     public mouseClickClip:AudioClip|null = null;
@@ -24,13 +26,13 @@ export class AudioManager extends Component {
     @property({type: SliderComponent})
     public sfxVolumeSlider:SliderComponent|null = null;
 
-
     private _musicSource:AudioSource|null = null;
     private _sfxSource:AudioSource|null = null;
 
     get musicSource() { return this._musicSource; }
     get sfxSource() { return this._sfxSource; }
 
+ 
     start () {
         let sources = this.getComponents(AudioSource);
         this._musicSource = sources[1]
@@ -43,8 +45,6 @@ export class AudioManager extends Component {
         if (this._sfxSource && this.sfxVolumeSlider) {
             this.sfxVolumeSlider.progress = this._sfxSource.volume;
         }
-
-        ACEventHandler.instance?.registerEvent("play-sound", this.onPlaySound, this);
     }
 
     public adjustMusicVolume() {
@@ -59,8 +59,8 @@ export class AudioManager extends Component {
         }
     }
 
-    onPlaySound(soundName:string) {
-        switch(soundName) {
+    public onPlaySound(event:Event|null, customEventData:string) {
+        switch(customEventData) {
             case "jump":
                 if (this.jumpClip) this._sfxSource?.playOneShot(this.jumpClip, this.sfxSource?.volume);
                 break;
@@ -70,6 +70,11 @@ export class AudioManager extends Component {
             case "confirm":
                 if (this.mouseConfirmClick) this._sfxSource?.playOneShot(this.mouseConfirmClick, this._sfxSource.volume);
                 break;
+            case "death":
+                if (this.deathClip) this._sfxSource?.playOneShot(this.deathClip, this._sfxSource.volume);
+                break;
+            case "laugh":
+                if (this.deathLaughClip) this._sfxSource?.playOneShot(this.deathLaughClip, this._sfxSource.volume);    
         }
     }
 }

@@ -2,7 +2,8 @@
   "__version__": "1.0.1",
   "general": {
     "designResolution": {
-      "width": 1132
+      "width": 1132,
+      "fitWidth": false
     }
   },
   "layer": [
@@ -19,15 +20,15 @@
       "value": 4
     },
     {
-      "name": "Background1",
+      "name": "Background-1",
       "value": 8
     },
     {
-      "name": "Background2",
+      "name": "Background-2",
       "value": 16
     },
     {
-      "name": "Background3",
+      "name": "Background-3",
       "value": 32
     },
     {
@@ -60,16 +61,21 @@
       {
         "index": 6,
         "name": "DeathGround"
+      },
+      {
+        "index": 7,
+        "name": "Obstacle"
       }
     ],
     "collisionMatrix": {
       "0": 0,
-      "1": 76,
+      "1": 204,
       "2": 34,
       "3": 26,
       "4": 8,
       "5": 4,
-      "6": 2
+      "6": 2,
+      "7": 2
     }
   }
 }

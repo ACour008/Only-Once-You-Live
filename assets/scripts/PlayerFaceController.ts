@@ -41,8 +41,8 @@ export class PlayerFaceController extends Component {
     }
 
     public randomizeFace() {
-        let eyeIdx = this._randomize(this.eyeSprites.length);
-        let mouthIdx = this._randomize(this.mouthSprites.length);
+        let eyeIdx = this._randomize(this.eyeSprites.length-1);
+        let mouthIdx = this._randomize(this.mouthSprites.length-1);
 
         this.moustacheSprite.node.active = (Math.random() < 0.15);
         this.eyeSprite.spriteFrame = this.eyeSprites[eyeIdx];

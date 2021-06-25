@@ -27,6 +27,7 @@ export class DeathGround extends Component {
         if (other.group === (1 << 1)) {
             console.log("You died!");
             this.gameManager.currentState = GameState.GS_DEATH;
+            this.gameManager.audioManager?.onPlaySound(null, "death");
             this.camera.addTrauma(this.trauma);
         }
     }

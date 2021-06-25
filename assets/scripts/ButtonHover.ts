@@ -1,16 +1,16 @@
 
 import { _decorator, Component, Node, ButtonComponent, CCFloat, Vec3 } from 'cc';
-import { ACEventHandler } from './ACEventHandler';
+import { AudioManager } from './AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ButtonHover')
 export class ButtonHover extends Component {
-    
-    // @property({type: EventHandler})
-    // public eventHandler:EventHandler|null = null;
 
     @property({type: CCFloat})
     public zoomScale:number = 1.2;
+
+    @property(AudioManager)
+    public audioManager!:AudioManager;
 
     private _originalScale = Vec3.ONE;
 
@@ -27,12 +27,11 @@ export class ButtonHover extends Component {
     }
 
     onMouseEnter(event:MouseEvent) {
-       this.node.scale = new Vec3(this.zoomScale, this.zoomScale, 1);
-       ACEventHandler.instance?.emitEvent("play-sound", "click");
+        this.audioManager.onPlaySound(null, "click");
+        this.node.scale = new Vec3(this.zoomScale, this.zoomScale, 1);
     }
 
     onMouseDown(event:MouseEvent) {
-        ACEventHandler.instance?.emitEvent("play-sound", "confirm");
         this.node.scale = Vec3.multiplyScalar(new Vec3(), this._originalScale, 0.9);
     }
 

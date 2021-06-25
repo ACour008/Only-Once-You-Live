@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, CCFloat, Vec2, Vec3} from 'cc';
-import { MINIGAME } from 'cc/env';
-import { makeNoise2D, Noise2D } from './openSimplexNoise/TwoD';
+import { _decorator, Component, Node, CCFloat, Vec2, Vec3, clamp} from 'cc';
+import { makeNoise2D, Noise2D } from './OpenSimplexNoise/TwoD';
 const { ccclass, property } = _decorator;
 
 @ccclass('CameraShake')
@@ -30,14 +29,20 @@ export class CameraShake extends Component {
     private _noise:Noise2D = makeNoise2D(Date.now());
     private _noiseX:number = 0;
     private _noiseY:number = 0;
-    private _targetPosition:Vec3|null = null;
 
 
     update(dt:number) {
         if (this.target) {
-            this._targetPosition = this.target.getPosition();
+            // Follow target
+            let targetPosition = this.target.position;
+            let currentPosition = this.node.position;
+
+            targetPosition = new Vec3(targetPosition.x, clamp(targetPosition.y, 0, 550), 0);
+            currentPosition.lerp(targetPosition, 0.1);
+            this.node.setPosition(0, currentPosition.y, 1000);
         }
         if (this._trauma) {
+            // Shake screen
             this._trauma = Math.max(this._trauma - this.decay * dt, 0);
             this._shake();
         }

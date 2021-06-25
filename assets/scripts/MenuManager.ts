@@ -1,6 +1,5 @@
 
 import { _decorator, Component, Node, Label } from 'cc';
-import { ACEventHandler } from './ACEventHandler';
 import { GameState } from "./GameManager";
 
 const { ccclass, property } = _decorator;
@@ -27,8 +26,6 @@ export class MenuManager extends Component {
     public quitNotificationLabel:Label|null = null;
 
     start() {
-        ACEventHandler.instance?.registerEvent('quit-button-down', this.onQuitButtonDown, this);
-        ACEventHandler.instance?.registerEvent('quit-button-up', this.onQuitButtonUp, this);
     }
 
     onQuitButtonDown() {

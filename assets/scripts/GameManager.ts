@@ -1,11 +1,11 @@
-import { _decorator, Component, PhysicsSystem2D, PHYSICS_2D_PTM_RATIO, Vec2, systemEvent, game, director, AudioSource, AudioClip, SliderComponent, Slider, RenderingSubMesh, SystemEventType, macro, EventKeyboard, Game, Label, EPhysics2DDrawFlags} from 'cc';
+import { _decorator, Component, PhysicsSystem2D, PHYSICS_2D_PTM_RATIO, Vec2, systemEvent, game,
+         director, SystemEventType, macro, EventKeyboard, Animation} from 'cc';
 import { PlayerMovement2D } from "./PlayerMovement2D";
 import { PlayerFaceController } from './PlayerFaceController';
 import { MenuManager } from "./MenuManager";
 import { AudioManager } from "./AudioManager";
 import { PlatformSpawner } from "./PlatformSpawner";
 import { Ground } from "./Ground";
-import { ACEventHandler } from './ACEventHandler';
 
 const { ccclass, property } = _decorator;
 
@@ -26,9 +26,6 @@ export class GameManager extends Component {
     @property(PlayerFaceController)
     public playerFaceController:PlayerFaceController|null = null;
 
-    @property({type:AudioSource})
-    public musicSource:AudioSource|null = null;
-
     @property({type:PlatformSpawner})
     public platformSpawner:PlatformSpawner|null = null;
 
@@ -40,6 +37,9 @@ export class GameManager extends Component {
 
     @property({type:AudioManager})
     public audioManager:AudioManager|null = null;
+
+    @property({type:Animation})
+    public devilLaugh:Animation|null = null;
     
     private _currentState = GameState.GS_MENU;
     private _quitTimer:number = 0;
@@ -53,7 +53,7 @@ export class GameManager extends Component {
             case GameState.GS_MENU:
                 systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDownMenuState, this);
                 systemEvent.on(SystemEventType.KEY_UP, this.onKeyUpMenuState, this);
-                systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownExceptMenuState, this);
+                systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownEscape, this);
 
                 this.menuManager?.setMenusForState(GameState.GS_MENU);
                 this.playerMovementController?.setInputActive(false);
@@ -64,7 +64,7 @@ export class GameManager extends Component {
             case GameState.GS_PLAY_START:
                 systemEvent.off(SystemEventType.KEY_DOWN, this.onKeyDownMenuState, this);
                 systemEvent.off(SystemEventType.KEY_UP, this.onKeyUpMenuState, this);
-                systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDownExceptMenuState, this);
+                systemEvent.on(SystemEventType.KEY_DOWN, this.onKeyDownEscape, this);
 
                 this.menuManager?.setMenusForState(GameState.GS_PLAY_START);
                 this.playerMovementController?.setInputActive(false);
@@ -74,7 +74,7 @@ export class GameManager extends Component {
                 break;
             case GameState.GS_PLAYING:
                 setTimeout( () => {
-                    this.menuManager?.setMenusForState(GameState.GS_PLAYING)
+                    this.menuManager?.setMenusForState(GameState.GS_PLAYING);
                     this.playerMovementController?.setInputActive(true);
                     this.platformSpawner?.activate(true);
                     this.ground.activate(true);
@@ -85,6 +85,10 @@ export class GameManager extends Component {
                 this.playerMovementController?.setInputActive(false);
                 this.playerFaceController?.makeDead();
                 this.platformSpawner?.activate(false);
+                setTimeout(()=> {
+                    this.devilLaugh?.play();
+                    this.audioManager?.onPlaySound(null, 'laugh');
+                }, 0.75);
 
                 setTimeout(()=> {
                     this._resetAll();
@@ -116,7 +120,7 @@ export class GameManager extends Component {
             case macro.KEY.q:
                 if (this._qIsPressed === 0) { 
                     this._quitTimer = Date.now();
-                    ACEventHandler.instance?.emitEvent("quit-button-down");
+                    this.menuManager?.onQuitButtonDown();
                 }
                 this._qIsPressed += 1;
                 break;
@@ -127,7 +131,7 @@ export class GameManager extends Component {
         switch(event.keyCode) {
             case macro.KEY.q:
                 this._qIsPressed = 0;
-                ACEventHandler.instance?.emitEvent("quit-button-up");
+                this.menuManager?.onQuitButtonUp();
                 break;
             case macro.KEY.c:
                 if (this._cIsPressed === 0) {
@@ -138,12 +142,17 @@ export class GameManager extends Component {
         }
     }
 
-    onKeyDownExceptMenuState(event:EventKeyboard) {
+    onKeyDownEscape(event:EventKeyboard) {
         switch(event.keyCode) {
             case macro.KEY.escape:
-                let fakeEvent = new Event("fake");
-                (director.isPaused) ? this.setPause(fakeEvent, "true") : this.setPause(fakeEvent, "false");
-                break;
+                if (this._currentState == GameState.GS_PLAY_START) {
+                    this.currentState = GameState.GS_MENU;
+                }
+                else {
+                    let fakeEvent = new Event("fake");
+                    (director.isPaused) ? this.setPause(fakeEvent, "true") : this.setPause(fakeEvent, "false");
+                    break;
+                }
         }
     }
 
@@ -161,6 +170,7 @@ export class GameManager extends Component {
 
     public restart() {
         this.currentState = GameState.GS_MENU;
+        this._resetAll();
     }
 
     public startGame() {
