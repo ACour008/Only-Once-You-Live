@@ -1,9 +1,9 @@
 {
+  "creator": {
+    "version": "3.4.0"
+  },
   "name": "OOYL-Final",
   "type": "3d",
   "uuid": "60b1d40b-7e94-4094-91ff-71e0fa2de746",
-  "version": "3.2.0",
-  "creator": {
-    "version": "3.2.0"
-  }
+  "version": "3.4.0"
 }

@@ -2,18 +2,16 @@
   "__version__": "1.0.1",
   "general": {
     "designResolution": {
-      "width": 1132,
-      "fitWidth": false
+      "width": 1920,
+      "fitWidth": false,
+      "height": 1080,
+      "fitHeight": false
     }
   },
   "layer": [
     {
       "name": "Player",
       "value": 1
-    },
-    {
-      "name": "Platform/Obstacle",
-      "value": 2
     },
     {
       "name": "Ground",
@@ -34,6 +32,22 @@
     {
       "name": "DeathGround",
       "value": 64
+    },
+    {
+      "name": "Platform",
+      "value": 2
+    },
+    {
+      "name": "Obstacle",
+      "value": 128
+    },
+    {
+      "name": "Bounceback-Wall",
+      "value": 256
+    },
+    {
+      "name": "Score-Start",
+      "value": 512
     }
   ],
   "physics": {
@@ -65,17 +79,35 @@
       {
         "index": 7,
         "name": "Obstacle"
+      },
+      {
+        "index": 8,
+        "name": "PlatformDestroy"
+      },
+      {
+        "index": 9,
+        "name": "StartScore"
+      },
+      {
+        "index": 10,
+        "name": "Instruction"
       }
     ],
     "collisionMatrix": {
       "0": 0,
-      "1": 204,
+      "1": 1740,
       "2": 34,
-      "3": 26,
+      "3": 274,
       "4": 8,
       "5": 4,
       "6": 2,
-      "7": 2
+      "7": 258,
+      "8": 136,
+      "9": 2,
+      "10": 2
+    },
+    "gravity": {
+      "y": -10
     }
   }
 }
